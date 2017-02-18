@@ -1,10 +1,11 @@
 import {ajax} from "tools";
 import React from "react";
-import {Table,Icon,Button,Select,InputNumber,Form,Input,message}from "antd";
+import {Table,Icon,Button,Select,InputNumber,Form,Input,message,Modal}from "antd";
 const {Column,ColumnGroup}=Table;
 const FormItem = Form.Item;
 const InputGroup = Input.Group;
 const Option = Select.Option;
+const confirm =Modal.confirm;
 class ShowHall extends React.Component{
     constructor(props){
         super(props);
@@ -27,9 +28,13 @@ class ShowHall extends React.Component{
         }
        
     }
-       del(){
-            console.log(this.props.data)
-        }
+      del(){
+        confirm({
+            title: '确定删除该放映厅?',
+            onOk() { },
+            onCancel() {},
+        });
+    }
     render(){
         //  rowKey="this.props.data"
         return <Table  dataSource={this.state.hallData}>

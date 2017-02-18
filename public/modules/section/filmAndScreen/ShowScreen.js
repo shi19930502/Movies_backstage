@@ -1,16 +1,19 @@
 import {ajax} from "tools";
 import React from "react";
 import ShowHall from "./ShowHall";
-import {Table,Icon,Button,Select,InputNumber,Form,Input,message}from "antd";
+import {Table,Icon,Button,Select,Form,Input,message,Modal}from "antd";
 const {Column,ColumnGroup}=Table;
 const FormItem = Form.Item;
 const InputGroup = Input.Group;
 const Option = Select.Option;
+const confirm =Modal.confirm;
 class ShowScreen extends React.Component{
       constructor(props){
          super(props);
          this.state={
-             screenName:[]
+             screenName:[],
+             visible:false,
+             confirmLoading:false
          }
      }
   componentWillMount(){
@@ -20,11 +23,34 @@ class ShowScreen extends React.Component{
         this.showName();
     }
     addHall(text){
-        console.log(this.state.screenName)
-        // console.log(this.props.data)
+        this.setState({
+            visible:true
+        })
+    }
+    handleOk(){
+        this.setState({
+            confirmLoading:true
+        })
+        setTimeout(() => {
+            this.setState({
+            visible: false,
+            confirmLoading: false,
+             });
+        }, 800);
+    }
+    handleCancel(){
+          this.setState({
+            visible:false
+        })
     }
     del(){
-
+         confirm({
+    title: '确定删除该院线?',
+    onOk() {
+      
+    },
+    onCancel() {},
+  });
     }
      showName(){
          var newData=this.props.data;
@@ -47,7 +73,13 @@ class ShowScreen extends React.Component{
          })
      }
     render(){
-        return <Table expandedRowRender={record => <ShowHall  rooms={record.rooms}></ShowHall>} dataSource={this.state.screenName} rowKey="_id">
+         const formItemLayout = {
+            labelCol: { span: 6 },
+            wrapperCol: { span: 14 },
+        };  
+        const {getFieldDecorator} =this.props.form;
+        return <div>
+        <Table expandedRowRender={record => <ShowHall  rooms={record.rooms}></ShowHall>} dataSource={this.state.screenName} rowKey="_id">
                     <Column width='70%' title="影院" dataIndex="screenings.name" key="screenings.name"/>
                     <Column title="操作" key="action" render={(text, record) => (
                     <span>
@@ -57,6 +89,20 @@ class ShowScreen extends React.Component{
                     </span>
                     )}/>
                 </Table>
+                <Modal title="增加影院" visible={this.state.visible} onOk={this.handleOk.bind(this)} onCancel={this.handleCancel.bind(this)} confirmLoading={this.state.confirmLoading}>
+   <Form>
+       <FormItem label="放映厅" {...formItemLayout}>
+            {getFieldDecorator('name')(<Input/>)}
+        </FormItem>
+        <FormItem label="时间" {...formItemLayout}>
+            {getFieldDecorator('time')(<Input placeholder="格式  20:00"/>)}
+        </FormItem>
+        <FormItem label="价格" {...formItemLayout}>
+            {getFieldDecorator('price')(<Input/>)}
+        </FormItem>
+         </Form>
+                </Modal>
+            </div>     
     }
 }
 export default Form.create()(ShowScreen);
