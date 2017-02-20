@@ -1,4 +1,4 @@
-var ajax=function (params) {
+var ajax = function(params) {
     var paramStr = "";
     var fetchObj;
     for (var key in params.data) {
@@ -19,9 +19,9 @@ var ajax=function (params) {
             credentials: 'include'
         });
     }
-    fetchObj.then(function (res) {
+    fetchObj.then(function(res) {
         if (res.ok) {
-            res.text().then(function (data) {
+            res.text().then(function(data) {
                 try {
                     params.success(JSON.parse(data));
                 } catch (e) {
@@ -34,4 +34,18 @@ var ajax=function (params) {
     });
 
 }
-export {ajax}
+var confirmID = function(ary1, ary2) {
+    let newAry = [];
+    for (var i = 0; i < ary1.length; i++) {
+        for (var j = 0; j < ary2.length; j++) {
+            if (ary1[i] == ary2[j]) {
+                newAry.push(ary1[i])
+            }
+        }
+    }
+    return newAry;
+}
+export {
+    ajax,
+    confirmID
+}
