@@ -13,7 +13,8 @@ class ShowScreen extends React.Component{
          this.state={
              screenName:[],
              visible:false,
-             confirmLoading:false
+             confirmLoading:false,
+             selectedOne:[]
          }
      }
   componentWillMount(){
@@ -24,32 +25,98 @@ class ShowScreen extends React.Component{
     }
     addHall(text){
         this.setState({
-            visible:true
+            visible:true,
+            selectedOne:text
         })
     }
     handleOk(){
-        this.setState({
-            confirmLoading:true
-        })
-        setTimeout(() => {
-            this.setState({
-            visible: false,
-            confirmLoading: false,
-             });
-        }, 800);
+        var newHall=this.props.form.getFieldsValue();
+        var selectedOne = this.state.selectedOne;   
+        var isOK=true;
+        if(!selectedOne.rooms){
+                selectedOne.rooms=[];
+            }
+        var check= selectedOne.rooms.map((value)=>{
+            if(newHall.name==value.name&&newHall.time==value.time){
+                    message.error('该放映厅已存在');
+                    isOK =false;
+            }
+        });
+        if(isOK){
+            ajax({
+                 type:"post",
+                url:"filmAndScreen/find",
+                data:{
+                    _id:selectedOne._id
+                },
+                success:function(data){
+                    selectedOne.screenings=data.screenings;
+                }
+            })
+            selectedOne.rooms.push({
+                name:newHall.name,
+                time:newHall.time,
+                price:newHall.price
+            });
+            ajax({
+                type:"post",
+                url:"filmAndScreen/del",
+                data:{
+                    _id:selectedOne._id
+                },
+                success:function(){
+                    delete selectedOne.key;
+                    selectedOne.films=JSON.stringify(selectedOne.films);
+                    selectedOne.screenings=JSON.stringify(selectedOne.screenings);
+                    selectedOne.rooms=JSON.stringify(selectedOne.rooms);
+                    ajax({
+                        type:"post",
+                        url:"filmAndScreen/add",
+                        data:selectedOne,
+                        success:function(data){
+                            message.success('添加放映厅成功');
+                             this.showName();
+                        }.bind(this)  
+                    })
+                      this.setState({
+                          confirmLoading:true
+                        })
+                    setTimeout(() => {
+                        this.setState({
+                        visible: false,
+                        confirmLoading: false,
+                        });
+                        message.warning('增加放映厅的影院会 倒序排列',2.5)
+                    }, 1000);
+                 }.bind(this)
+            })
+        }
+      
     }
     handleCancel(){
           this.setState({
             visible:false
         })
     }
-    del(){
-         confirm({
-    title: '确定删除该院线?',
-    onOk() {
-      
-    },
-    onCancel() {},
+    del(text){
+        //用变量that接受当前this的指向
+        var that=this;
+        confirm({
+            title: '确定删除该影院?',
+            onOk(){
+                ajax({
+                    type:"get",
+                    url:"filmAndScreen/del",
+                    data:{
+                        _id:text._id
+                    },
+                    success:function(data){
+                    message.success('删除影院成功');
+                    that.showName();
+                    }
+                });
+            },
+            onCancel() {},
   });
     }
      showName(){
@@ -79,7 +146,7 @@ class ShowScreen extends React.Component{
         };  
         const {getFieldDecorator} =this.props.form;
         return <div>
-        <Table expandedRowRender={record => <ShowHall  rooms={record.rooms}></ShowHall>} dataSource={this.state.screenName} rowKey="_id">
+        <Table expandedRowRender={record => <ShowHall  filmAndScreenId={record._id}></ShowHall>} dataSource={this.state.screenName} rowKey="_id">
                     <Column width='70%' title="影院" dataIndex="screenings.name" key="screenings.name"/>
                     <Column title="操作" key="action" render={(text, record) => (
                     <span>

@@ -11,23 +11,39 @@ export default class FilmAndScreen extends React.Component {
     componentWillMount(){
         this.show();
     }
-    show(page){
-        ajax({
+    show(cnname){
+        if(cnname){
+             ajax({
             type:"get",
             url:"films/find",
             data:{
-                page:page,
-                rows:5
+                cnname:cnname
             },
             success:function(data){
-                for(var i=0;i<data.rows.length;i++){
-                    data.rows[i].key=i;
+                  for(var i=0;i<data.length;i++){
+                    data[i].key=i;
                 }
                 this.setState({
                     filmsData:data
                 });
             }.bind(this)
         })
+    }
+    else{
+          ajax({
+            type:"get",
+            url:"films/find",
+            success:function(data){
+                  for(var i=0;i<data.length;i++){
+                    data[i].key=i;
+                }
+                this.setState({
+                    filmsData:data
+                });
+            }.bind(this)
+        })
+    }
+      
     }
     render(){
         return <div>

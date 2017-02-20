@@ -17,26 +17,64 @@ class ShowHall extends React.Component{
         this.showHall()
     }
     showHall(){
-        if(this.props.rooms){
-            var newData=this.props.rooms;
-            for(var i=0;i<newData.length;i++){
-                newData[i].key=i;
-            }
-            this.setState({
-                hallData:newData
+            ajax({
+                type:"get",
+                url:"filmAndScreen/find",
+                data:{
+                    _id:this.props.filmAndScreenId
+                },
+                success:function(data){
+                    var newData=data.rooms;
+                    if(newData){
+                        for(var i=0;i<newData.length;i++){
+                        newData[i].key=i;
+                      }
+                    }
+                    this.setState({
+                        hallData:newData
+                    })
+                }.bind(this)
             })
-        }
-       
     }
-      del(){
+      del(text){
+          var that =this;
+          var filmAndScreenId=this.props.filmAndScreenId;
         confirm({
             title: '确定删除该放映厅?',
-            onOk() { },
+            onOk() {
+                  ajax({
+              type:"get",
+              url:"filmAndScreen/find",
+              data:{
+                 _id:filmAndScreenId
+              },
+              success:function(data){
+                  var room=data.rooms;
+                  for(var i=0;i<room.length;i++){
+                         if(room[i].name==text.name&room[i].time==text.time){
+                             room.splice(i,1);
+                         }
+                  }
+                  ajax({
+                      type:"post",
+                      url:"filmAndScreen/update",
+                      data:{
+                          _id:filmAndScreenId,
+                          rooms:JSON.stringify(room)
+                      },
+                      success:function(data){
+                          that.showHall();
+                          message.success('删除该放映厅成功');
+                      }
+                  })
+              }.bind(this)
+
+          })
+             },
             onCancel() {},
         });
     }
     render(){
-        //  rowKey="this.props.data"
         return <Table  dataSource={this.state.hallData}>
                     <Column title="放映厅" dataIndex="name" key="name"/>
                     <Column title="放映时间" dataIndex="time" key="time"/>
